@@ -3,6 +3,8 @@ package rpc
 import (
 	"github.com/Camelia-hu/gomall/auth/kitex_gen/auth/authservice"
 	"github.com/Camelia-hu/gomall/cart/kitex_gen/cart/cartservice"
+	"github.com/Camelia-hu/gomall/order/kitex_gen/order/orderservice"
+	"github.com/Camelia-hu/gomall/payment/kitex_gen/payment/paymentservice"
 	"github.com/Camelia-hu/gomall/product/kitex_gen/product/productcatalogservice"
 	"github.com/Camelia-hu/gomall/user/kitex_gen/user/userservice"
 	"github.com/cloudwego/kitex/client"
@@ -12,10 +14,12 @@ import (
 )
 
 var (
-	Urpc userservice.Client
-	Arpc authservice.Client
-	Prpc productcatalogservice.Client
-	Crpc cartservice.Client
+	Urpc   userservice.Client
+	Arpc   authservice.Client
+	Prpc   productcatalogservice.Client
+	Crpc   cartservice.Client
+	Orpc   orderservice.Client
+	Payrpc paymentservice.Client
 )
 
 func RpcInit() {
@@ -42,4 +46,16 @@ func RpcInit() {
 		log.Panicln("CartRpc find err : ", err)
 	}
 	Crpc = cartservice.MustNewClient("cart", client.WithResolver(cartR), client.WithRPCTimeout(3*time.Second))
+
+	orderR, err := consul.NewConsulResolver("127.0.0.1:8500")
+	if err != nil {
+		log.Panicln("OrderRpc find err : ", err)
+	}
+	Orpc = orderservice.MustNewClient("order", client.WithResolver(orderR), client.WithRPCTimeout(3*time.Second))
+
+	paymentR, err := consul.NewConsulResolver("127.0.0.1:8500")
+	if err != nil {
+		log.Panicln("PaymentRpc find err : ", err)
+	}
+	Payrpc = paymentservice.MustNewClient("payment", client.WithResolver(paymentR), client.WithRPCTimeout(3*time.Second))
 }

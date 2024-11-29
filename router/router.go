@@ -32,6 +32,20 @@ func RouterInit() {
 		cart.GET("/get", service.GetCart)
 		cart.GET("/delete", service.DeleteCart)
 	}
+
+	order := h.Group("/order")
+	order.Use(service.AccessTokenAuth())
+	{
+		order.POST("/place", service.PlaceOrder)
+		order.GET("/list", service.ListOrder)
+	}
+
+	payment := h.Group("/payment")
+	payment.Use(service.AccessTokenAuth())
+	{
+		payment.POST("/createCredit")
+		payment.POST("/charge")
+	}
 	h.Spin()
 }
 
