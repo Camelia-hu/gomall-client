@@ -1,13 +1,26 @@
 package router
 
 import (
+	"context"
 	"github.com/Camelia-hu/gomall-client/service"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/hertz-contrib/obs-opentelemetry/provider"
+	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 )
 
 func RouterInit() {
-	h := server.Default()
+	serviceName := "gomall-client"
 
+	p := provider.NewOpenTelemetryProvider(
+		provider.WithServiceName(serviceName),
+		provider.WithExportEndpoint("localhost:4317"),
+		provider.WithInsecure(),
+	)
+	defer p.Shutdown(context.Background())
+
+	tracer, cfg := tracing.NewServerTracer()
+	h := server.Default(tracer)
+	h.Use(tracing.ServerMiddleware(cfg))
 	user := h.Group("/user")
 	{
 		user.POST("/register", service.Register)
@@ -43,8 +56,8 @@ func RouterInit() {
 	payment := h.Group("/payment")
 	payment.Use(service.AccessTokenAuth())
 	{
-		payment.POST("/createCredit")
-		payment.POST("/charge")
+		payment.POST("/createCredit", service.CreateCredit)
+		payment.POST("/charge", service.Charge)
 	}
 	h.Spin()
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Camelia-hu/gomall-client/module"
 	"github.com/Camelia-hu/gomall-client/rpc"
+	myTrace "github.com/Camelia-hu/gomall-client/trace"
 	"github.com/Camelia-hu/gomall/auth/kitex_gen/auth"
 	"github.com/Camelia-hu/gomall/user/kitex_gen/user"
 	"github.com/cloudwego/hertz/pkg/app"
@@ -12,6 +13,11 @@ import (
 )
 
 func Register(ctx context.Context, c *app.RequestContext) {
+	traceNames := module.TraceNames{
+		TraceName: "register",
+		SpanName:  "register",
+	}
+	defer myTrace.SpanInit(ctx, traceNames.TraceName, traceNames.SpanName).End()
 	email := c.Query("email")
 	password := c.Query("password")
 	rePassword := c.Query("rePassword")
